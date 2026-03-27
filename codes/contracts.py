@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from selenium import webdriver
 from datetime import datetime
 import pandas as pd
+import numpy as np
 import platform
 import warnings
 import shutil
