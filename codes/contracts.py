@@ -16,6 +16,7 @@ import warnings
 import shutil
 import time
 import os
+import re
 
 
 # Clase para el resultado del bloque
