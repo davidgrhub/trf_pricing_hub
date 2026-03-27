@@ -515,7 +515,7 @@ def generate_final_contracts(df: pd.DataFrame, df_7: pd.DataFrame, df_30: pd.Dat
 
 
 def process_data(delegation_list: list[str], downloads_paths: str,
-                 delegations_dict: dict[int, str]) -> pd.Dataframe:
+                 delegations_dict: dict[int, str]) -> pd.DataFrame:
     # Ignoramos Warnings
     warnings.filterwarnings("ignore")
     # Lista de dataframes
