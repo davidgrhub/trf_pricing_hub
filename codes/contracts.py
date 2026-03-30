@@ -227,12 +227,13 @@ def refactor_data(downloads_path: str, path_delegation: str, new_name: str, dele
 
 
 def run_scraping_contracts(delegation: str, geckodriver_path: str, headless: bool, downloads_path: str,
-                 timeout: int, user_mail: str, user_password: str) -> None:
+                 timeout: int, user_mail: str, user_password: str) -> bool:
     # Iniciamos el log
     print_value = f"\t\t{delegation}:"
     # Inicializamos el driver
     driver, wait = get_driver(geckodriver_path, headless, downloads_path, delegation, timeout)
     # Manejo de error para cerrar el driver
+    success = False
     try:
         # Ingresamos a la url del dash
         driver.get('https://app.powerbi.com/links/E3XWJznNTp?ctid=34b7220f-ddb0-49fb-b389-f4b8d3e1ec9a&pbi_source='
@@ -249,6 +250,7 @@ def run_scraping_contracts(delegation: str, geckodriver_path: str, headless: boo
             # Movemos el archivo descargado y lo renombramos
             if refactor_data(downloads_path, delegation, delegation, True):
                 print_value += "\n\t\t\t✅ Data was refactored successfully"
+                success = True
             # Si no encontramos el archivo descargado
             else:
                 print_value += "\n\t\t\t⚠️ No data found"
@@ -261,15 +263,15 @@ def run_scraping_contracts(delegation: str, geckodriver_path: str, headless: boo
             # Salimos del scraping
             driver.close()
             driver.quit()
-    except TimeoutError:
+    except Exception as e:
         # Salimos de nuestro scraping cerrando el driver y salimos
         driver.close()
         driver.quit()
-        print_value += "\n\t\t\t❌ Scraping failed"
+        print_value += f"\n\t\t\t❌ Scraping failed: {type(e).__name__}: {e}"
     # Imprimimos le resultado
     print(print_value)
-    # Terminamos la función
-    return
+    # Terminamos la función regresando la bandera
+    return success
 
 
 def download_table(driver: webdriver, wait: WebDriverWait, value: int, timeout: int) -> None:
@@ -588,17 +590,42 @@ def main_contracts(db_user: str, db_user_password: str, db_host: str, db_port: s
     # Iniciamos el scraping de las delegaciones
     try:
         print("\t • Starting delegations scraping")
-        with ProcessPoolExecutor(max_workers=max_workers) as executor:
-            futures = [
-                executor.submit(run_scraping_contracts, delegation, geckodriver_path, headless, downloads_path,
-                                timeout, user_mail, user_password)
-                for delegation in delegation_list
-            ]
-            for f in as_completed(futures):
-                try:
-                    f.result()
-                except Exception as e:
-                    print(f"\t\t❌ Worker failed: {type(e).__name__}: {e}")
+        # Declaramos el numero máximo de intentos
+        max_retries = 3
+        # Delegaciones pendientes
+        pending = list(delegation_list)
+        # Ciclo de intentos
+        for attempt in range(1, max_retries + 1):
+            # Si no quedan delegaciones pendientes terminamos
+            if not pending:
+                break
+            # Si intentamos mas de una vez
+            if attempt > 1:
+                print(f"\t • Retry attempt {attempt}/{max_retries} for {len(pending)} delegation(s): {pending}")
+            # Lista de delegaciones con error
+            failed = []
+            # Multi proceso
+            with ProcessPoolExecutor(max_workers=max_workers) as executor:
+                future_to_delegation = {
+                    executor.submit(run_scraping_contracts, delegation, geckodriver_path, headless, downloads_path,
+                                    timeout, user_mail, user_password): delegation
+                    for delegation in pending
+                }
+                # Comprobamos el resultado
+                for f in as_completed(future_to_delegation):
+                    delegation = future_to_delegation[f]
+                    try:
+                        success = f.result()
+                        if not success:
+                            failed.append(delegation)
+                    except Exception as e:
+                        print(f"\t\t❌ Worker crashed [{delegation}]: {type(e).__name__}: {e}")
+                        failed.append(delegation)
+            # Reintentamos las delegaciones que fallaron
+            pending = failed
+        # Imprimimos si tenemos delegaciones despues de los intentos máximos
+        if pending:
+            print(f"\t\t⚠️ These delegations could not be scraped after {max_retries} attempts: {pending}")
     except Exception as e:
         print("\t ❌ Failed to perform scraping for contract download")
         return Result(result=False, error=f"\t[Error] -> {type(e).__name__}: {e}")
