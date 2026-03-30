@@ -537,7 +537,7 @@ def process_data(delegation_list: list[str], downloads_paths: str,
             # Limpiamos los contratos
             df = clean_data(df)
             # Reestructura de contratos
-            df = get_final_contracts(df, delegations_dict, df_7, df_30, df_110)
+            df = generate_final_contracts(df, delegations_dict, df_7, df_30, df_110)
             # Guardamos en la lista de dfs
             all_dfs.append(df)
         else:
