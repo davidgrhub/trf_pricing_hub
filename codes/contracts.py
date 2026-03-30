@@ -263,11 +263,11 @@ def run_scraping_contracts(delegation: str, geckodriver_path: str, headless: boo
             # Salimos del scraping
             driver.close()
             driver.quit()
-    except Exception as e:
+    except TimeoutError:
         # Salimos de nuestro scraping cerrando el driver y salimos
         driver.close()
         driver.quit()
-        print_value += f"\n\t\t\t❌ Scraping failed: {type(e).__name__}: {e}"
+        print_value += "\n\t\t\t❌ Scraping failed"
     # Imprimimos le resultado
     print(print_value)
     # Terminamos la función regresando la bandera
@@ -422,7 +422,7 @@ def clean_data(df: pd.DataFrame) -> pd.DataFrame:
         "699622384": "234966", "699522376": "232964", "699622385": "234967"
     }
     # Reemplazamos los valores en la columna id_unico utilizando el mapeo
-    data['unique_id'] = data['unique_id'].replace(map_ids)
+    df['unique_id'] = df['unique_id'].replace(map_ids)
     # Ordenamos los datos por "unique_id"
     df = df.sort_values('unique_id', ascending=True)
     # Terminamos la función regresando el dataframe
