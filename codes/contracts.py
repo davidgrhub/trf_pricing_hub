@@ -449,7 +449,8 @@ def generate_final_contracts(df: pd.DataFrame, df_7: pd.DataFrame, df_30: pd.Dat
     for unique_id in df['unique_id'].unique():
         is_data = df[df['unique_id'] == unique_id]
         # Logica del contrato pvp
-        is_pvp = is_data[is_data['contract_type'] == 'PVP'].sort_values('rango_minpax').reset_index(drop=True)
+        is_pvp = is_data[(is_data['contract_type'] == 'PVP') & (is_data['rango_minpax'] <= 2) &
+            (is_data['rango_maxpax'] >= 2)].sort_values('rango_minpax').reset_index(drop=True)
         # Si no tenemos saltamos
         if is_pvp.empty:
             continue
