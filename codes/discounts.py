@@ -418,7 +418,9 @@ def run_discount(geckodriver_path: str, timeout: int, headless: bool, strategy: 
     if not df.empty:
         # Obtenemos el ID de la caja de descuento
         id_box = get_id_box(discount, strategy)
+        print(id_box)
         message = f"\t\t\t\tDiscount {discount*100:.0f}% | Box ID {id_box} | Upload: {len(df)} products\n"
+        print(message)
         # Obtenemos el driver
         driver, wait = get_driver(geckodriver_path, headless, timeout)
         # Iniciamos sesión
