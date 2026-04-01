@@ -490,8 +490,9 @@ def run_scraping(df: pd.DataFrame, strategy_list: list[str], timeout: int, headl
                 futures = []
                 for discount in unique_discounts:
                     futures.append(
-                        executor.submit(run_discount,geckodriver_path, timeout, headless, strategy, df_strategy,
-                                        dict_strategies[strategy]['name'], discount, interval, user, use_password)
+                        executor.submit(run_discount,geckodriver_path, timeout, headless,
+                                        dict_strategies[strategy]['name'], df_strategy,
+                                        dict_strategies[strategy]['value'], discount, interval, user, use_password)
                     )
                 # Procesamos los resultados
                 for future in as_completed(futures):
