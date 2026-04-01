@@ -2,6 +2,8 @@ from codes.contracts import Result as ContractsResult
 from codes.contracts import main_contracts
 from codes.strategies import Result as StrategiesResult
 from codes.strategies import main_strategies
+from codes.discounts import Result as DiscountsResult
+from codes.discounts import main_discounts
 import codes.values as values
 import time
 
@@ -23,17 +25,27 @@ def main() -> None:
     start_time = time.perf_counter()
     # Bloque contratos
     if values.contracts:
-        # ejecutamos el bloque de contratos
+        # Ejecutamos el bloque de contratos
         result: ContractsResult = main_contracts(values.db_user, values.db_user_password, values.db_host,
                                                  values.db_port, values.db_name, values.headless, values.timeout,
                                                  values.user_mail, values.user_password, values.max_workers_contracts)
         # Imprimimos si existe el error
         if not result.result: print(result.error)
+    # Bloque estrategias
     if values.strategies:
         # Ejecutamos el bloque de contratos
         result: StrategiesResult = main_strategies(values.db_user, values.db_user_password, values.db_host,
                                                    values.db_port, values.db_name, values.ff_min_margin,
                                                    values.ff_max_discount)
+        # Imprimimos si existe el error
+        if not result.result: print(result.error)
+    # Bloque descuentos
+    if values.discounts:
+        # Ejecutamos el bloque de contratos
+        result: DiscountsResult = main_discounts(values.db_user, values.db_user_password, values.db_host,
+                                                 values.db_port, values.db_name, values.strategy_list,
+                                                 values.timeout + 60, values.headless, values.interval,
+                                                 values.max_workers_discounts, values.user_mail, values.user_password)
         # Imprimimos si existe el error
         if not result.result: print(result.error)
     # Imprimimos el tiempo de ejecución total

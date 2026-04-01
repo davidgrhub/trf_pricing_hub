@@ -24,6 +24,17 @@ load_dotenv()
 # Cargamos las variables para python
 contracts = strtobool(os.getenv("CONTRACTS"))
 strategies = strtobool(os.getenv("STRATEGIES"))
+discounts = strtobool(os.getenv("DISCOUNTS"))
+
+headless = strtobool(os.getenv("HEADLESS"))
+timeout = int(os.getenv("TIMEOUT"))
+interval = int(os.getenv("INTERVAL"))
+max_workers_contracts = int(os.getenv("MAX_WORKERS_CONTRACTS"))
+max_workers_discounts = int(os.getenv("MAX_WORKERS_DISCOUNTS"))
+
+strategy_list = list(map(str, os.getenv("STRATEGY_LIST").split(",")))
+ff_min_margin = float(os.getenv("FF_MIN_MARGIN"))
+ff_max_discount = float(os.getenv("FF_MAX_DISCOUNT"))
 
 db_user = os.getenv("DB_USER")
 db_user_password = os.getenv("DB_USER_PASSWORD")
@@ -33,10 +44,3 @@ db_name = os.getenv("DB_NAME")
 
 user_mail = os.getenv("USER_MAIL")
 user_password = os.getenv("USER_PASSWORD")
-
-headless = strtobool(os.getenv("HEADLESS"))
-timeout = int(os.getenv("TIMEOUT"))
-max_workers_contracts = int(os.getenv("MAX_WORKERS_CONTRACTS"))
-
-ff_min_margin = float(os.getenv("FF_MIN_MARGIN"))
-ff_max_discount = float(os.getenv("FF_MAX_DISCOUNT"))
