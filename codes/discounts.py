@@ -524,6 +524,7 @@ def main_discounts(db_user: str, db_user_password: str, db_host: str, db_port: i
                      db_user_password, db_host, db_port, db_name)
     except Exception as e:
         print("\t ❌ Failed to apply discounts")
+        print(f"{e}")
         return Result(result=False, error=f"\t[Error] -> {type(e).__name__}: {e}")
     # Terminamos la función main
     return Result(result=True)
