@@ -416,6 +416,7 @@ def run_discount(geckodriver_path: str, timeout: int, headless: bool, strategy: 
     error_product = []
     # Comprobamos que tengamos descuentos a cargar
     if not df.empty:
+        print(strategy)
         # Obtenemos el ID de la caja de descuento
         id_box = get_id_box(discount, strategy)
         print(id_box)
