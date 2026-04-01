@@ -407,8 +407,10 @@ def apply_discounts(wait: WebDriverWait, strategy: str, discount: float, df: pd.
 
 def run_discount(geckodriver_path: str, timeout: int, headless: bool, strategy: str, df: pd.DataFrame, value: str,
                  discount: float, interval: int, user: str, use_password: str) -> tuple[list[int], list[int]]:
+    print(len(df))
     # Filtramos la base de datos conforme al descuento
     df = df[df[f'{value}_final_discount'] == discount]
+    print(len(df))
     # Declaramos las listas
     ok_product = []
     error_product = []
@@ -484,6 +486,8 @@ def run_scraping(df: pd.DataFrame, strategy_list: list[str], timeout: int, headl
             # Obtenemos los descuentos unicos ordenados por su frecuencia
             unique_discounts = list(df_strategy[f"{dict_strategies[strategy]['value']}"
                                                 f"_final_discount"].value_counts().index)
+            print("=================")
+            print(unique_discounts)
             # Cargamos descuento por descuento
             print(f"\t\t\tScraping to apply discounts...")
             with ProcessPoolExecutor(max_workers) as executor:
@@ -524,7 +528,6 @@ def main_discounts(db_user: str, db_user_password: str, db_host: str, db_port: i
                      db_user_password, db_host, db_port, db_name)
     except Exception as e:
         print("\t ❌ Failed to apply discounts")
-        print(f"{e}")
         return Result(result=False, error=f"\t[Error] -> {type(e).__name__}: {e}")
     # Terminamos la función main
     return Result(result=True)
