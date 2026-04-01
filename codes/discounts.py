@@ -407,21 +407,16 @@ def apply_discounts(wait: WebDriverWait, strategy: str, discount: float, df: pd.
 
 def run_discount(geckodriver_path: str, timeout: int, headless: bool, strategy: str, df: pd.DataFrame, value: str,
                  discount: float, interval: int, user: str, use_password: str) -> tuple[list[int], list[int]]:
-    print(len(df))
     # Filtramos la base de datos conforme al descuento
     df = df[df[f'{value}_final_discount'] == discount]
-    print(len(df))
     # Declaramos las listas
     ok_product = []
     error_product = []
     # Comprobamos que tengamos descuentos a cargar
     if not df.empty:
-        print(strategy)
         # Obtenemos el ID de la caja de descuento
         id_box = get_id_box(discount, strategy)
-        print(id_box)
         message = f"\t\t\t\tDiscount {discount*100:.0f}% | Box ID {id_box} | Upload: {len(df)} products\n"
-        print(message)
         # Obtenemos el driver
         driver, wait = get_driver(geckodriver_path, headless, timeout)
         # Iniciamos sesión
@@ -489,8 +484,6 @@ def run_scraping(df: pd.DataFrame, strategy_list: list[str], timeout: int, headl
             # Obtenemos los descuentos unicos ordenados por su frecuencia
             unique_discounts = list(df_strategy[f"{dict_strategies[strategy]['value']}"
                                                 f"_final_discount"].value_counts().index)
-            print("=================")
-            print(unique_discounts)
             # Cargamos descuento por descuento
             print(f"\t\t\tScraping to apply discounts...")
             with ProcessPoolExecutor(max_workers) as executor:
@@ -498,7 +491,7 @@ def run_scraping(df: pd.DataFrame, strategy_list: list[str], timeout: int, headl
                 for discount in unique_discounts:
                     futures.append(
                         executor.submit(run_discount,geckodriver_path, timeout, headless, strategy, df_strategy,
-                                        dict_strategies[strategy]['value'], discount, interval, user, use_password)
+                                        dict_strategies[strategy]['name'], discount, interval, user, use_password)
                     )
                 # Procesamos los resultados
                 for future in as_completed(futures):
