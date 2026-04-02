@@ -140,6 +140,8 @@ def filter_delegation(driver: webdriver, timeout: int, delegation: str) -> bool:
     aux_delegation_list = []
     # Variable de control
     flag = False
+    # Variable para el ultimo intento
+    last_chance = False
     # Repasamos las delegaciones del filtro
     while True:
         # Guardamos en una variable temporal
@@ -153,7 +155,7 @@ def filter_delegation(driver: webdriver, timeout: int, delegation: str) -> bool:
             if temp_element.text == delegation:
                 # Obtenemos el estado de la opción
                 val = wait.until(ec.visibility_of_element_located(
-                    (By.XPATH, f'(//div[@class="slicerItemContainer"][@title="{temp_element.text}"])')))
+                    (By.XPATH, f'//div[contains(@class, "slicerItemContainer") and @title="{temp_element.text}"]')))
                 # Comprobamos que no este seleccionada la opción
                 if val.get_attribute('aria-selected') == 'false' or val.get_attribute('aria-checked') == 'false':
                     # Seleccionamos la delegación
@@ -167,13 +169,20 @@ def filter_delegation(driver: webdriver, timeout: int, delegation: str) -> bool:
                 # Pasamos a la siguiente opción
                 webdriver.ActionChains(driver).send_keys(Keys.DOWN).perform()
                 time.sleep(1.2)
-                # Sumamos el contador como máximo 10 y lo mantenemos asi
-                if aux_count < 7:
+                # Sumamos el contador como máximo 8 y lo mantenemos asi
+                if aux_count < 6:
                     aux_count += 1
-        # Si la opción ya se encuentra en la lista
-        elif temp_element.text in aux_delegation_list:
-            # Cerramos el ciclo while
-            break
+        else:
+            # Sí estamos en la posición 6
+            if aux_count == 6 and not last_chance:
+                # Intentamos leer la posición 7
+                aux_count = 7
+                last_chance = True
+                # Volvemos al inicio del while para leer el index 7
+                continue
+            else:
+                # Salimos del ciclo
+                break
     # Cerramos los filtros
     wait.until(ec.visibility_of_element_located(
         (By.XPATH, f'//div[@aria-label="Power BI Report"]'))).click()
