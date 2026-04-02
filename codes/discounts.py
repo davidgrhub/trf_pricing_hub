@@ -498,6 +498,8 @@ def run_scraping(df: pd.DataFrame, strategy_list: list[str], timeout: int, headl
             # Obtenemos los descuentos unicos ordenados por su frecuencia
             unique_discounts = list(df_strategy[f"{dict_strategies[strategy]['value']}"
                                                 f"_final_discount"].value_counts().index)
+            val_str_order = ", ".join([f"{v * 100:.0f}%" for v in unique_discounts])
+            print(f"\t\t\tOrder: {val_str_order}")
             # Cargamos descuento por descuento
             print(f"\t\t\tScraping to apply discounts...")
             with ProcessPoolExecutor(max_workers) as executor:
