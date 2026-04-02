@@ -277,12 +277,16 @@ def apply_discounts(wait: WebDriverWait, strategy: str, discount: float, df: pd.
     if name_box == strategy and value_box == f"{discount*100:.0f}":
         # Comprobamos si tiene productos cargados previamente
         try:
+            # Editamos el tiempo de espera
+            wait = WebDriverWait(driver, (timeout / 2))
             product_remove = wait.until(ec.visibility_of_all_elements_located(
                 (By.XPATH, '//img[@data-qtip="Remove"]')))
             # Eliminamos los productos
             for remove in product_remove:
                 remove.click()
                 time.sleep(0.2)
+            # Volvemos con el tiempo de espera base
+            wait = WebDriverWait(driver, timeout)
             # Guardamos los cambios
             wait.until(ec.visibility_of_element_located(
                 (By.XPATH, '//button[@id="guardarCerrar-btnEl"]'))).click()
@@ -304,10 +308,12 @@ def apply_discounts(wait: WebDriverWait, strategy: str, discount: float, df: pd.
                 # Guardamos los cambios
                 wait.until(ec.visibility_of_element_located(
                     (By.XPATH, '//button[@id="guardarCerrar-btnEl"]'))).click()
-                wait = WebDriverWait(driver, (timeout * 5))
+                # Cambiamos el tiempo de espera máximo
+                wait = WebDriverWait(driver, (timeout * 4))
                 # Aceptamos los cambios
                 wait.until(ec.visibility_of_element_located(
                     (By.XPATH, '//button[@id="button-1005-btnEl"]'))).click()
+                # Regresamos al tiempo de espera base
                 wait = WebDriverWait(driver, timeout)
                 # Cerramos la sesión
                 wait.until(ec.visibility_of_element_located(
@@ -335,17 +341,21 @@ def apply_discounts(wait: WebDriverWait, strategy: str, discount: float, df: pd.
             type_product_container = wait.until(ec.visibility_of_element_located(
                 (By.XPATH, '//table[@id="TipoProductoPanel-triggerWrap"]')))
             type_product_container.find_element(By.XPATH, './tbody/tr/td[2]').click()
-            # Seleccionamos producto excursiones
+            # Seleccionamos producto traslados
             wait.until(ec.visibility_of_element_located(
-                (By.XPATH, '//div[@data-qtip="Excursiones"]'))).click()
+                (By.XPATH, '//div[@data-qtip="Traslados"]'))).click()
             # Desplegamos la lista de productos
             product_select_container = wait.until(ec.visibility_of_element_located(
                 (By.XPATH, '//table[@id="ProductosSeleccionables-triggerWrap"]')))
             product_select_container.find_element(By.XPATH, './tbody/tr/td[2]').click()
             # Buscamos el producto por su id
             try:
+                # Cambiamos el tiempo máximo de espera
+                wait = WebDriverWait(driver, (timeout / 2))
                 wait.until(ec.visibility_of_element_located(
                     (By.CSS_SELECTOR, f'div[data-qtip$=" - {str(int(row["product_id"]))}"'))).click()
+                # Regresamos al tiempo de espera base
+                wait = WebDriverWait(driver, timeout)
             except TimeoutException:
                 # Si no lo encontramos lo agregamos a la lista de error
                 error_product.append(int(row["unique_id"]))
@@ -357,8 +367,12 @@ def apply_discounts(wait: WebDriverWait, strategy: str, discount: float, df: pd.
             option_select_container.find_element(By.XPATH, './tbody/tr/td[2]').click()
             # Buscamos la opción del producto
             try:
+                # Cambiamos el tiempo máximo de espera
+                wait = WebDriverWait(driver, (timeout / 2))
                 wait.until(ec.visibility_of_element_located(
                     (By.CSS_SELECTOR, f'div[data-qtip^="{str(int(row["option_id"]))} -"'))).click()
+                # Regresamos al tiempo de espera base
+                wait = WebDriverWait(driver, timeout)
             except TimeoutException:
                 # Si no lo encontramos lo agregamos a la lista de error
                 error_product.append(int(row["unique_id"]))
@@ -519,12 +533,12 @@ def main_discounts(db_user: str, db_user_password: str, db_host: str, db_port: i
         print("\t ❌ Failed to retrieve strategies from database")
         return Result(result=False, error=f"\t[Error] -> {type(e).__name__}: {e}")
     # Aplicamos los descuentos
-    try:
-        print("\t • Upload process initiated: preparing discounts for upload...")
-        run_scraping(df, strategy_list, timeout, headless, interval, max_workers, user, use_password, db_user,
-                     db_user_password, db_host, db_port, db_name)
-    except Exception as e:
-        print("\t ❌ Failed to apply discounts")
-        return Result(result=False, error=f"\t[Error] -> {type(e).__name__}: {e}")
+    #try:
+    print("\t • Upload process initiated: preparing discounts for upload...")
+    run_scraping(df, strategy_list, timeout, headless, interval, max_workers, user, use_password, db_user,
+                 db_user_password, db_host, db_port, db_name)
+    #except Exception as e:
+    #    print("\t ❌ Failed to apply discounts")
+    #    return Result(result=False, error=f"\t[Error] -> {type(e).__name__}: {e}")
     # Terminamos la función main
     return Result(result=True)

@@ -44,7 +44,7 @@ def main() -> None:
         # Ejecutamos el bloque de contratos
         result: DiscountsResult = main_discounts(values.db_user, values.db_user_password, values.db_host,
                                                  values.db_port, values.db_name, values.strategy_list,
-                                                 values.timeout + 60, values.headless, values.interval,
+                                                 values.timeout, values.headless, values.interval,
                                                  values.max_workers_discounts, values.user_mail, values.user_password)
         # Imprimimos si existe el error
         if not result.result: print(result.error)
