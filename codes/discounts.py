@@ -533,12 +533,12 @@ def main_discounts(db_user: str, db_user_password: str, db_host: str, db_port: i
         print("\t ❌ Failed to retrieve strategies from database")
         return Result(result=False, error=f"\t[Error] -> {type(e).__name__}: {e}")
     # Aplicamos los descuentos
-    #try:
-    print("\t • Upload process initiated: preparing discounts for upload...")
-    run_scraping(df, strategy_list, timeout, headless, interval, max_workers, user, use_password, db_user,
-                 db_user_password, db_host, db_port, db_name)
-    #except Exception as e:
-    #    print("\t ❌ Failed to apply discounts")
-    #    return Result(result=False, error=f"\t[Error] -> {type(e).__name__}: {e}")
+    try:
+        print("\t • Upload process initiated: preparing discounts for upload...")
+        run_scraping(df, strategy_list, timeout, headless, interval, max_workers, user, use_password, db_user,
+                     db_user_password, db_host, db_port, db_name)
+    except Exception as e:
+        print("\t ❌ Failed to apply discounts")
+        return Result(result=False, error=f"\t[Error] -> {type(e).__name__}: {e}")
     # Terminamos la función main
     return Result(result=True)
