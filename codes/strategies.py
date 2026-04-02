@@ -8,7 +8,7 @@ import shutil
 import os
 
 
-# Clase para le resultado del bloque
+# Clase para el resultado del bloque
 @dataclass
 class Result:
     result: bool
@@ -30,7 +30,7 @@ def strategy(df: pd.DataFrame, value: str, min_margin: float, max_discount: floa
              competitiveness: str) -> pd.DataFrame:
     # Creamos la tarifa final con respecto al margen minimo
     df[f'{value}_min_sale'] = (df['final_cost'] / (1 - min_margin)).round(2)
-    # Comprobación de sale con respecto a la estrategia
+    # Comprobación de 'sale' con respecto a la estrategia
     if value == "ff":
         # Para F&F comprobamos que la tarifa minimo sea menor a la tarifa B2C forzosamente
         df[f'{value}_min_sale'] = np.where(df[f'{value}_min_sale'] >= df[competitiveness], df[competitiveness] - 1,

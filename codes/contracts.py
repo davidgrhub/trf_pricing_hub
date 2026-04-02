@@ -342,7 +342,7 @@ def run_scraping_percentile(geckodriver_path: str, headless: bool, downloads_pat
 
 
 # Funciones de procesado
-def compute_unique_id(row: pd.Series) -> int:
+def compute_unique_id(row: pd.Series) -> float:
     # Máximo valor de un int
     max_int = np.iinfo(int).max
     srt = int(row['id_srt'])
@@ -373,11 +373,11 @@ def clean_percentile(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def get_percentile_data(downloads_path: str) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    # Leemos el archivo de percentil de 7 dias
+    # Leemos el archivo de percentil de 7 días
     df_7 = pd.read_excel(os.path.join(downloads_path, 'Percentile_7.xlsx'))
-    # Leemos el archivo de percentil de 30 dias
+    # Leemos el archivo de percentil de 30 días
     df_30 = pd.read_excel(os.path.join(downloads_path, 'Percentile_30.xlsx'))
-    # Leemos el archivo de percentil de 110 dias
+    # Leemos el archivo de percentil de 110 días
     df_110 = pd.read_excel(os.path.join(downloads_path, 'Percentile_110.xlsx'))
     # Limpiamos los df
     df_7 = clean_percentile(df_7)
@@ -462,7 +462,7 @@ def generate_final_contracts(df: pd.DataFrame, df_7: pd.DataFrame, df_30: pd.Dat
             key = 'base'
         elif pd.notna(first_row['sale_adu_usd']) and pd.notna(first_row['cost_adu_usd']):
             key = 'adu'
-        # Si tenemos precios no validos saltamos
+        # Si tenemos precios no válidos saltamos
         if not key:
             continue
         # Obtenemos el costo y el precio de venta
@@ -515,7 +515,7 @@ def generate_final_contracts(df: pd.DataFrame, df_7: pd.DataFrame, df_30: pd.Dat
             'sale_pvp': sale_pvp,
             'margin': margin
         })
-    # Terminamos la funcion regresando las filas en un Dataframe
+    # Terminamos la función regresando las filas en un Dataframe
     return pd.DataFrame(rows)
 
 
@@ -561,7 +561,7 @@ def upload_data(df: pd.DataFrame, db_user: str, db_user_password: str, db_host: 
 
 
 # Función main
-def main_contracts(db_user: str, db_user_password: str, db_host: str, db_port: str, db_name: str,
+def main_contracts(db_user: str, db_user_password: str, db_host: str, db_port: int, db_name: str,
                    headless: bool, timeout: int, user_mail: str, user_password: str, max_workers: int) -> Result:
     print("\t[Contracts Block] Scraping & Processing 📝")
     # Obtenemos los paths a usar
@@ -600,7 +600,7 @@ def main_contracts(db_user: str, db_user_password: str, db_host: str, db_port: s
             # Si no quedan delegaciones pendientes terminamos
             if not pending:
                 break
-            # Si intentamos mas de una vez
+            # Sí intentamos más de una vez
             if attempt > 1:
                 print(f"\t • Retry attempt {attempt}/{max_retries} for {len(pending)} delegation(s): {pending}")
             # Lista de delegaciones con error
@@ -624,7 +624,7 @@ def main_contracts(db_user: str, db_user_password: str, db_host: str, db_port: s
                         failed.append(delegation)
             # Reintentamos las delegaciones que fallaron
             pending = failed
-        # Imprimimos si tenemos delegaciones despues de los intentos máximos
+        # Imprimimos si tenemos delegaciones después de los intentos máximos
         if pending:
             print(f"\t\t⚠️ These delegations could not be scraped after {max_retries} attempts: {pending}")
     except Exception as e:
