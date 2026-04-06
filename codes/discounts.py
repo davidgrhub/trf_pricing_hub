@@ -4,18 +4,14 @@ from webdriver_manager.firefox import GeckoDriverManager
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.firefox.service import Service
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine
 from datetime import datetime, timedelta
 from dataclasses import dataclass
 from selenium import webdriver
 import pandas as pd
 import platform
-import warnings
-import shutil
 import time
-import os
 
 
 # Clase para resultado
@@ -40,7 +36,7 @@ def get_strategies(db_user: str, db_user_password: str, db_host: str, db_port: i
 
 
 # Funciones para scraping
-def get_driver(geckodriver_path: str, headless: bool, timeout: int) -> tuple[webdriver, WebDriverWait]:
+def get_driver(geckodriver_path: str, headless: bool, timeout: int) -> tuple[selenium.webdriver, WebDriverWait]:
     # Declaramos si el sistema operativo es windows
     is_windows = platform.system() == "Windows"
     # Declaramos el servicio del driver
@@ -60,7 +56,7 @@ def get_driver(geckodriver_path: str, headless: bool, timeout: int) -> tuple[web
     return driver, wait
 
 
-def sing_in(driver: webdriver, wait: WebDriverWait, user: str, use_password: str) -> None:
+def sing_in(driver: selenium.webdriver, wait: WebDriverWait, user: str, use_password: str) -> None:
     # Ingresamos a la Intranet
     driver.get('https://www.nexustours.com/intranet/login.aspx')
     # Login con azure
@@ -147,7 +143,7 @@ def deactivate_box(wait: WebDriverWait, strategy: str, count: int) -> int:
     return count
 
 
-def close_driver(driver: webdriver) -> None:
+def close_driver(driver: selenium.webdriver) -> None:
     # Cerramos el driver
     driver.close()
     # Quitamos la sesión del driver
@@ -266,7 +262,7 @@ def edit_box(wait: WebDriverWait) -> tuple[str, str]:
 
 
 def apply_discounts(wait: WebDriverWait, strategy: str, discount: float, df: pd.DataFrame,
-                    message: str, interval: int, id_box: str, driver: webdriver,
+                    message: str, interval: int, id_box: str, driver: selenium.webdriver,
                     timeout: int) -> tuple[str, list[int], list[int]]:
     # Lista de productos cargados
     ok_product = []

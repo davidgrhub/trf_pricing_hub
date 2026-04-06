@@ -1,11 +1,7 @@
-from pandas.io.formats.format import return_docstring
 from sqlalchemy import create_engine
 from dataclasses import dataclass
 import pandas as pd
 import numpy as np
-import warnings
-import shutil
-import os
 
 
 # Clase para el resultado del bloque
