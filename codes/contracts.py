@@ -1,5 +1,6 @@
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from selenium.webdriver.support import expected_conditions as ec
+from selenium.webdriver.firefox.webdriver import WebDriver
 from webdriver_manager.firefox import GeckoDriverManager
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.firefox.service import Service
@@ -73,7 +74,7 @@ def get_activate_delegations(db_user: str, db_user_password: str, db_host: str, 
 
 # Funciones para scraping
 def get_driver(geckodriver_path: str, headless: bool, downloads_path: str, delegation: str,
-               timeout: int) -> tuple[selenium.webdriver, WebDriverWait]:
+               timeout: int) -> tuple[WebDriver, WebDriverWait]:
     # Declaramos si el sistema operativo es windows
     is_windows = platform.system() == "Windows"
     # Declaramos el servicio del driver
@@ -128,7 +129,7 @@ def sing_in(wait: WebDriverWait, user_mail: str, user_password: str) -> None:
     return
 
 
-def filter_delegation(driver: selenium.webdriver, timeout: int, delegation: str) -> bool:
+def filter_delegation(driver: WebDriver, timeout: int, delegation: str) -> bool:
     # Cambiamos el tiempo de espera en este bloque
     wait = WebDriverWait(driver, (timeout * 10))
     # Desplegamos la lista de delegaciones
@@ -190,7 +191,7 @@ def filter_delegation(driver: selenium.webdriver, timeout: int, delegation: str)
     return flag
 
 
-def download_data(driver: selenium.webdriver, timeout: int) -> None:
+def download_data(driver: WebDriver, timeout: int) -> None:
     # Declaramos el tiempo máximo de espera del bloque
     wait = WebDriverWait(driver, timeout)
     # Seleccionamos más opciones
@@ -283,7 +284,7 @@ def run_scraping_contracts(delegation: str, geckodriver_path: str, headless: boo
     return success
 
 
-def download_table(driver: selenium.webdriver, wait: WebDriverWait, value: int, timeout: int) -> None:
+def download_table(driver: WebDriver, wait: WebDriverWait, value: int, timeout: int) -> None:
     # Seleccionamos la tabla
     table = wait.until(ec.visibility_of_element_located(
         (By.XPATH, f'(//div[@class="vcBody themableBackgroundColor themableBorderColorSolid sub-selectable '

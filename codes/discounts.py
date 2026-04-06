@@ -1,5 +1,6 @@
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from selenium.webdriver.support import expected_conditions as ec
+from selenium.webdriver.firefox.webdriver import WebDriver
 from webdriver_manager.firefox import GeckoDriverManager
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException
@@ -36,7 +37,7 @@ def get_strategies(db_user: str, db_user_password: str, db_host: str, db_port: i
 
 
 # Funciones para scraping
-def get_driver(geckodriver_path: str, headless: bool, timeout: int) -> tuple[selenium.webdriver, WebDriverWait]:
+def get_driver(geckodriver_path: str, headless: bool, timeout: int) -> tuple[WebDriver, WebDriverWait]:
     # Declaramos si el sistema operativo es windows
     is_windows = platform.system() == "Windows"
     # Declaramos el servicio del driver
@@ -56,7 +57,7 @@ def get_driver(geckodriver_path: str, headless: bool, timeout: int) -> tuple[sel
     return driver, wait
 
 
-def sing_in(driver: selenium.webdriver, wait: WebDriverWait, user: str, use_password: str) -> None:
+def sing_in(driver: WebDriver, wait: WebDriverWait, user: str, use_password: str) -> None:
     # Ingresamos a la Intranet
     driver.get('https://www.nexustours.com/intranet/login.aspx')
     # Login con azure
@@ -143,7 +144,7 @@ def deactivate_box(wait: WebDriverWait, strategy: str, count: int) -> int:
     return count
 
 
-def close_driver(driver: selenium.webdriver) -> None:
+def close_driver(driver: WebDriver) -> None:
     # Cerramos el driver
     driver.close()
     # Quitamos la sesión del driver
@@ -262,7 +263,7 @@ def edit_box(wait: WebDriverWait) -> tuple[str, str]:
 
 
 def apply_discounts(wait: WebDriverWait, strategy: str, discount: float, df: pd.DataFrame,
-                    message: str, interval: int, id_box: str, driver: selenium.webdriver,
+                    message: str, interval: int, id_box: str, driver: WebDriver,
                     timeout: int) -> tuple[str, list[int], list[int]]:
     # Lista de productos cargados
     ok_product = []
