@@ -83,8 +83,6 @@ def get_driver(geckodriver_path: str, headless: bool, downloads_path: str, deleg
     options = webdriver.FirefoxOptions()
     options.set_preference("intl.accept_languages", "en-US,en")
     options.add_argument("-private-window")
-    # firefox_exe = "/usr/bin/firefox-esr" if not is_windows else r"C:\Program Files\Mozilla Firefox\firefox.exe"
-    # options.binary_location = firefox_exe
     # Configuramos el headless
     if not (is_windows and headless is False):
         options.add_argument("--headless")
@@ -410,6 +408,8 @@ def clean_data(df: pd.DataFrame) -> pd.DataFrame:
     df['unique_id'] = df['product_id'].astype(int).astype(str) + df['option_id'].astype(int).astype(str)
     # Filtramos los servicios
     df = df[df['contract_suplement'] == 'Service']
+    # Filtramos los datos donde el contrato de venta y costo este activo
+    df = df[(df['cc_active'] == 1) & (df['sc_active'] == 1)]
     # Obtenemos la fecha actual
     current_date = datetime.now()
     # Filtramos los datos con fecha de contrato de servicio válidos
