@@ -25,6 +25,7 @@ load_dotenv()
 contracts = strtobool(os.getenv("CONTRACTS"))
 strategies = strtobool(os.getenv("STRATEGIES"))
 discounts = strtobool(os.getenv("DISCOUNTS"))
+competitiveness = strtobool(os.getenv("COMPETITIVENESS"))
 
 headless = strtobool(os.getenv("HEADLESS"))
 timeout = int(os.getenv("TIMEOUT"))
@@ -33,6 +34,8 @@ max_workers_contracts = int(os.getenv("MAX_WORKERS_CONTRACTS"))
 max_workers_discounts = int(os.getenv("MAX_WORKERS_DISCOUNTS"))
 
 strategy_list = list(map(str, os.getenv("STRATEGY_LIST").split(",")))
+pvp_min_margin = float(os.getenv("PVP_MIN_MARGIN"))
+pvp_max_discount = float(os.getenv("PVP_MAX_DISCOUNT"))
 ff_min_margin = float(os.getenv("FF_MIN_MARGIN"))
 ff_max_discount = float(os.getenv("FF_MAX_DISCOUNT"))
 

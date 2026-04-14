@@ -27,10 +27,14 @@ def strategy(df: pd.DataFrame, value: str, min_margin: float, max_discount: floa
     # Creamos la tarifa final con respecto al margen minimo
     df[f'{value}_min_sale'] = (df['final_cost'] / (1 - min_margin)).round(2)
     # Comprobación de 'sale' con respecto a la estrategia
-    if value == "ff":
-        # Para F&F comprobamos que la tarifa minimo sea menor a la tarifa B2C forzosamente
+    if value == "swg":
+        # Para Sunwing comprobamos que la tarifa PVP no sea menor a Sunwing
+        df[f'{value}_min_sale'] = np.where(df[f'{value}_min_sale'] <= df[competitiveness] + 1, df[competitiveness] + 1,
+                                           df[f'{value}_min_sale'])
+    elif value == "ff":
+        # Para F&F comprobamos que la tarifa minima sea menor a la tarifa PVP forzosamente
         df[f'{value}_min_sale'] = np.where(df[f'{value}_min_sale'] >= df[competitiveness], df[competitiveness] - 1,
-            df[f'{value}_min_sale'])
+                                           df[f'{value}_min_sale'])
     # Creamos el descuento correspondiente para esa tarifa
     discount = (df['sale_pvp'] - df[f'{value}_min_sale']) / df['sale_pvp']
     # Redondeamos los descuentos
@@ -38,15 +42,18 @@ def strategy(df: pd.DataFrame, value: str, min_margin: float, max_discount: floa
     # Comprobación del descuento con respecto a la estrategia
     if value == "ff":
         # Para F&F comprobamos que el descuento menor sea 1%
-        df[f'{value}_max_discount'] = np.where(df[f'{value}_max_discount'] <= 0, 0.01, df[f'{value}_max_discount'])
+        df[f'{value}_max_discount'] = np.where(df[f'{value}_max_discount'] == 0, 0.01, df[f'{value}_max_discount'])
     # Creamos el descuento final validando que no supere el límite permitido
-    df[f'{value}_final_discount'] = np.where(df[f'{value}_max_discount'] > max_discount, max_discount,
-                                             df[f'{value}_max_discount'])
+    df[f'{value}_final_discount'] = np.clip(df[f'{value}_max_discount'], 0, max_discount)
     # Creamos la tarifa final correspondiente
     df[f'{value}_final_sale'] = (df['sale_pvp'] * (1 - df[f'{value}_final_discount'])).round(2)
     # Creamos el margen final
     df[f'{value}_final_margin'] = ((df[f'{value}_final_sale'] - df['final_cost']) / df[f'{value}_final_sale']).round(2)
     # Creamos la columna que indica que descuentos aplican
+    if value == "pvp" or value == "swg":
+        # Para PVP los productos que tengamos
+        df[f'{value}_aplay'] = ((df[f'{value}_final_discount'] > 0) & (df['final_cost'] >= 1) &
+                                (df['sale_pvp'] > 0)).astype(int)
     if value == "ff":
         # Para F&F todos los productos sin importar margen o costos aplican
         df[f'{value}_aplay'] = 1
@@ -54,9 +61,14 @@ def strategy(df: pd.DataFrame, value: str, min_margin: float, max_discount: floa
     return df
 
 
-def formulation_strategies(df: pd.DataFrame, ff_min_margin: float, ff_max_discount: float) -> pd.DataFrame:
+def formulation_strategies(df: pd.DataFrame, ff_min_margin: float, ff_max_discount: float, pvp_min_margin: float,
+                           pvp_max_discount: float) -> pd.DataFrame:
+    # Creamos la estrategia para PVP
+    df = strategy(df, 'pvp', pvp_min_margin, pvp_max_discount, 'N/A')
+    # Creamos la estrategia para sunwing
+    df = strategy(df, 'swg', pvp_min_margin, pvp_max_discount, 'sale_swg')
     # Creamos la estrategia para Friends and Family
-    df = strategy(df, 'ff', ff_min_margin, ff_max_discount, 'sale_pvp')
+    df = strategy(df, 'ff', ff_min_margin, ff_max_discount, 'pvp_final_sale')
     # Terminamos la función regresando el dataframe
     return df
 
@@ -74,7 +86,8 @@ def upload_data(df: pd.DataFrame, db_user: str, db_user_password: str, db_host: 
 
 # Función main
 def main_strategies(db_user: str, db_user_password: str, db_host: str, db_port: int, db_name: str,
-                    ff_min_margin: float, ff_max_discount: float) -> Result:
+                    ff_min_margin: float, ff_max_discount: float, pvp_min_margin: float,
+                    pvp_max_discount: float) -> Result:
     print("\t[Strategies Block] Processing ⚙️")
     # Obtenemos los contratos procesados
     try:
@@ -86,7 +99,7 @@ def main_strategies(db_user: str, db_user_password: str, db_host: str, db_port: 
     # Creamos las estrategias
     try:
         print("\t • Starting strategies processing")
-        df = formulation_strategies(df, ff_min_margin, ff_max_discount)
+        df = formulation_strategies(df, ff_min_margin, ff_max_discount, pvp_min_margin, pvp_max_discount)
         print("\t\tFinal strategies generated successfully")
     except Exception as e:
         print("\t ❌ Failed to generate final strategies")
