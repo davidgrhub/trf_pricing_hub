@@ -414,7 +414,7 @@ def get_id_box(discount: float, strategy: str) -> str:
         'TRFCCFDIS 0.18': '10359',
         'TRFCCFDIS 0.19': '10360',
         'TRFCCFDIS 0.2': '10361',
-        'TRFCCFDIS 0.21': '1062',
+        'TRFCCFDIS 0.21': '10362',
         'TRFCCFDIS 0.22': '10363',
         'TRFCCFDIS 0.23': '10364',
         'TRFCCFDIS 0.24': '10365',
