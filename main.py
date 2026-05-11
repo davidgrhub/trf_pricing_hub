@@ -1,9 +1,9 @@
 from codes.contracts import Result as ContractsResult
 from codes.contracts import main_contracts
+from codes.competitiveness import Result as CompetitivenessResult
+from codes.competitiveness import main_competitiveness
 from codes.strategies import Result as StrategiesResult
 from codes.strategies import main_strategies
-#from codes.competitiveness import Result as CompetitivenessResult
-#from codes.competitiveness import main_competitiveness
 from codes.discounts import Result as DiscountsResult
 from codes.discounts import main_discounts
 import codes.values as values
@@ -33,6 +33,12 @@ def main() -> None:
                                                  values.user_mail, values.user_password, values.max_workers_contracts)
         # Imprimimos si existe el error
         if not result.result: print(result.error)
+    # Bloque de competitividad
+    if values.competitiveness:
+        # Ejecutamos el bloque de competitividad
+        result: CompetitivenessResult = main_competitiveness()
+        # Imprimimos si existe el error
+        if not result.result: print(result.error)
     # Bloque estrategias
     if values.strategies:
         # Ejecutamos el bloque de contratos
@@ -42,12 +48,6 @@ def main() -> None:
                                                    values.pvp_max_discount)
         # Imprimimos si existe el error
         if not result.result: print(result.error)
-    # Bloque de competitividad
-#    if values.competitiveness:
-        # Ejecutamos el bloque de competitividad
-#        result: CompetitivenessResult = main_competitiveness()
-        # Imprimimos si existe el error
-#        if not result.result: print(result.error)
     # Bloque descuentos
     if values.discounts:
         # Ejecutamos el bloque de contratos

@@ -448,11 +448,11 @@ def generate_final_contracts(df: pd.DataFrame, df_7: pd.DataFrame, df_30: pd.Dat
     map30_pax = df_30.set_index('unique_id_percentile')['Percentil_costo_x_pax'].to_dict()
     map110_usd = df_110.set_index('unique_id_percentile')['Percentil_Cost_USD'].to_dict()
     map110_pax = df_110.set_index('unique_id_percentile')['Percentil_costo_x_pax'].to_dict()
-    def lookup_with_fallback(uid, *maps):
+    def lookup_with_fallback(uid, maps_with_labels):
         for key_ in (int(uid), str(uid)):
-            for m in maps:
-                if key_ in m: return m[key_]
-        return np.nan
+            for m, label in maps_with_labels:
+                if key_ in m: return m[key_], label
+        return np.nan, np.nan
     # Lista de filas
     rows = []
     # Procesamiento por ID Único
@@ -480,13 +480,18 @@ def generate_final_contracts(df: pd.DataFrame, df_7: pd.DataFrame, df_30: pd.Dat
         sale_pvp = round(first_row[f'sale_{key}_usd'], 2)
         # Si es 'Shared', buscamos en mapas de PAX, si no, en USD
         if 'Shared' in str(first_row['service_type']):
-            cost_pct = lookup_with_fallback(unique_id, map7_pax, map30_pax, map110_pax)
+            maps_to_search = [(map7_pax, 7), (map30_pax, 30), (map110_pax, 110)]
         else:
-            cost_pct = lookup_with_fallback(unique_id, map7_usd, map30_usd, map110_usd)
+            maps_to_search = [(map7_usd, 7), (map30_usd, 30), (map110_usd, 110)]
+        cost_pct, period_pct = lookup_with_fallback(unique_id, maps_to_search)
         # Redondeamos el costo percentil
         cost_pct = round(cost_pct, 2) if pd.notna(cost_pct) else np.nan
         # El costo final es el percentil, si no existe, el del contrato
-        final_cost = cost_pct if pd.notna(cost_pct) else cost_contract
+        if pd.notna(cost_pct) and cost_pct > 0:
+            final_cost = cost_pct
+        else:
+            final_cost = cost_contract
+            period_pct = np.nan
         margin = round((sale_pvp - final_cost) / sale_pvp, 2) if sale_pvp != 0 else 0
         # Logica para contratos SWG/VEX
         is_swg = is_data[is_data['contract_type'] == 'SWG/VEX']
@@ -520,6 +525,7 @@ def generate_final_contracts(df: pd.DataFrame, df_7: pd.DataFrame, df_30: pd.Dat
             'base_or_adult': key.upper(),
             'cost_contract': cost_contract,
             'cost_percentile': cost_pct,
+            'period_percentile': period_pct,
             'final_cost': final_cost,
             'sale_swg': sale_swg,
             'sale_pvp': sale_pvp,
