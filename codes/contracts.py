@@ -324,7 +324,7 @@ def run_scraping_percentile(geckodriver_path: str, headless: bool, downloads_pat
         sing_in(wait, user_mail, user_password)
         print("\t\tLogged in successfully")
         # Lista de percentiles
-        percentile_list = ['Percentile_7', 'Percentile_30', 'Percentile_110']
+        percentile_list = ['Percentile_7', 'Percentile_30', 'Percentile_120']
         # Procesamos cada una de las tablas
         for i, percentile in enumerate(percentile_list):
             print(f"\t\t • {percentile}:")
@@ -385,14 +385,14 @@ def get_percentile_data(downloads_path: str) -> tuple[pd.DataFrame, pd.DataFrame
     df_7 = pd.read_excel(os.path.join(downloads_path, 'Percentile_7.xlsx'))
     # Leemos el archivo de percentil de 30 días
     df_30 = pd.read_excel(os.path.join(downloads_path, 'Percentile_30.xlsx'))
-    # Leemos el archivo de percentil de 110 días
-    df_110 = pd.read_excel(os.path.join(downloads_path, 'Percentile_110.xlsx'))
+    # Leemos el archivo de percentil de 120 días
+    df_120 = pd.read_excel(os.path.join(downloads_path, 'Percentile_120.xlsx'))
     # Limpiamos los df
     df_7 = clean_percentile(df_7)
     df_30 = clean_percentile(df_30)
-    df_110 = clean_percentile(df_110)
+    df_120 = clean_percentile(df_120)
     # Terminamos la función regresando los dataframes de percentiles
-    return df_7, df_30, df_110
+    return df_7, df_30, df_120
 
 
 def clean_data(df: pd.DataFrame) -> pd.DataFrame:
@@ -439,15 +439,15 @@ def clean_data(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def generate_final_contracts(df: pd.DataFrame, df_7: pd.DataFrame, df_30: pd.DataFrame, df_110: pd.DataFrame,
+def generate_final_contracts(df: pd.DataFrame, df_7: pd.DataFrame, df_30: pd.DataFrame, df_120: pd.DataFrame,
                              delegations_dict: dict[int, str]) -> pd.DataFrame:
     # Preparación de Mapas de Percentiles
     map7_usd = df_7.set_index('unique_id_percentile')['Percentil_Cost_USD'].to_dict()
     map7_pax = df_7.set_index('unique_id_percentile')['Percentil_costo_x_pax'].to_dict()
     map30_usd = df_30.set_index('unique_id_percentile')['Percentil_Cost_USD'].to_dict()
     map30_pax = df_30.set_index('unique_id_percentile')['Percentil_costo_x_pax'].to_dict()
-    map110_usd = df_110.set_index('unique_id_percentile')['Percentil_Cost_USD'].to_dict()
-    map110_pax = df_110.set_index('unique_id_percentile')['Percentil_costo_x_pax'].to_dict()
+    map120_usd = df_120.set_index('unique_id_percentile')['Percentil_Cost_USD'].to_dict()
+    map120_pax = df_120.set_index('unique_id_percentile')['Percentil_costo_x_pax'].to_dict()
     def lookup_with_fallback(uid, maps_with_labels):
         for key_ in (int(uid), str(uid)):
             for m, label in maps_with_labels:
@@ -480,9 +480,9 @@ def generate_final_contracts(df: pd.DataFrame, df_7: pd.DataFrame, df_30: pd.Dat
         sale_pvp = round(first_row[f'sale_{key}_usd'], 2)
         # Si es 'Shared', buscamos en mapas de PAX, si no, en USD
         if 'Shared' in str(first_row['service_type']):
-            maps_to_search = [(map7_pax, 7), (map30_pax, 30), (map110_pax, 110)]
+            maps_to_search = [(map7_pax, 7), (map30_pax, 30), (map120_pax, 120)]
         else:
-            maps_to_search = [(map7_usd, 7), (map30_usd, 30), (map110_usd, 110)]
+            maps_to_search = [(map7_usd, 7), (map30_usd, 30), (map120_usd, 120)]
         cost_pct, period_pct = lookup_with_fallback(unique_id, maps_to_search)
         # Redondeamos el costo percentil
         cost_pct = round(cost_pct, 2) if pd.notna(cost_pct) else np.nan
@@ -542,7 +542,7 @@ def process_data(delegation_list: list[str], downloads_paths: str,
     # Lista de dataframes
     all_dfs = []
     # Leemos y procesamos la data de los percentiles
-    df_7, df_30, df_110 = get_percentile_data(downloads_paths)
+    df_7, df_30, df_120 = get_percentile_data(downloads_paths)
     # Procesamos cada una de las delegaciones
     for delegation in delegation_list:
         # Creamos el path del archivo
@@ -554,7 +554,7 @@ def process_data(delegation_list: list[str], downloads_paths: str,
             # Limpiamos los contratos
             df = clean_data(df)
             # Reestructura de contratos
-            df = generate_final_contracts(df, df_7, df_30, df_110, delegations_dict)
+            df = generate_final_contracts(df, df_7, df_30, df_120, delegations_dict)
             # Guardamos en la lista de dfs
             all_dfs.append(df)
         else:
