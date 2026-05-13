@@ -36,8 +36,6 @@ def get_rules(db_user: str, db_user_password: str, db_host: str, db_port: int, d
 
 
 def vpn_on() -> str:
-    # Forzamos que el tráfico local sea permitido antes de conectar
-    subprocess.run(["nordvpn", "set", "lan-discovery", "on"], check=True, capture_output=True)
     # Conexión a USA
     process = subprocess.run(["nordvpn", "connect", "United_States"], check=True, capture_output=True, text=True)
     # Verificamos la IP obtenida para el log
