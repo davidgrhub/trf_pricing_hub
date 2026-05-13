@@ -36,7 +36,8 @@ def main() -> None:
     # Bloque de competitividad
     if values.competitiveness:
         # Ejecutamos el bloque de competitividad
-        result: CompetitivenessResult = main_competitiveness()
+        result: CompetitivenessResult = main_competitiveness(values.db_user, values.db_user_password, values.db_host,
+                                                             values.db_port, values.db_name)
         # Imprimimos si existe el error
         if not result.result: print(result.error)
     # Bloque estrategias
