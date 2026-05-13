@@ -72,6 +72,7 @@ def main_competitiveness(db_user: str, db_user_password: str, db_host: str, db_p
         return Result(result=False, error=f"\t[Error] -> {type(e).__name__}: {e}")
     # Iniciamos el scraping de competitividad
     print("XD")
+    time.sleep(10)
     # Apagamos el VPN
     try:
         print("\t • Disconnecting VPN")
