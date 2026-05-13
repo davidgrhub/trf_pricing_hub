@@ -12,6 +12,7 @@ from datetime import datetime, timedelta
 from dataclasses import dataclass
 from selenium import webdriver
 import pandas as pd
+import subprocess
 import numpy as np
 import platform
 import time
@@ -34,6 +35,25 @@ def get_rules(db_user: str, db_user_password: str, db_host: str, db_port: int, d
     return df
 
 
+def vpn_on() -> str:
+    # Forzamos que el tráfico local sea permitido antes de conectar
+    subprocess.run(["nordvpn", "set", "lan-discovery", "on"], check=True, capture_output=True)
+    # Conexión a USA
+    process = subprocess.run(["nordvpn", "connect", "United_States"], check=True, capture_output=True, text=True)
+    # Verificamos la IP obtenida para el log
+    ip_check = subprocess.run(["curl", "-s", "https://ifconfig.me"], capture_output=True, text=True)
+    # Terminamos la función regresando la nueva ip
+    return ip_check.stdout.strip()
+
+
+def vpn_off() -> str:
+    # Desconectamos el vpn
+    subprocess.run(["nordvpn", "disconnect"], check=True, capture_output=True)
+    # Verificamos la IP original
+    ip_check = subprocess.run(["curl", "-s", "https://ifconfig.me"], capture_output=True, text=True)
+    # Terminamos la función regresando la ip
+    return ip_check.stdout.strip()
+
 # Función main
 def main_competitiveness(db_user: str, db_user_password: str, db_host: str, db_port: int, db_name: str) -> Result:
     print("\t[Competitiveness Block] Scraping & processing 🧨")
@@ -43,6 +63,24 @@ def main_competitiveness(db_user: str, db_user_password: str, db_host: str, db_p
         print(f"\t • Rules successfully retrieved. Rows loaded: {len(df)}")
     except Exception as e:
         print("\t ❌ Failed to retrieve rules from database")
+        return Result(result=False, error=f"\t[Error] -> {type(e).__name__}: {e}")
+    # Prendemos el VPN
+    try:
+        print("\t • Connecting to VPN")
+        new_ip = vpn_on()
+        print(f"\t\tCurrent IP: {new_ip}")
+    except Exception as e:
+        print("\t ❌ Failed to connect to VPN")
+        return Result(result=False, error=f"\t[Error] -> {type(e).__name__}: {e}")
+    # Iniciamos el scraping de competitividad
+    print("XD")
+    # Apagamos el VPN
+    try:
+        print("\t • Disconnecting VPN")
+        ip = vpn_off()
+        print(f"\t\tOriginal IP: {ip}")
+    except Exception as e:
+        print("\t ❌ Failed to disconnect VPN")
         return Result(result=False, error=f"\t[Error] -> {type(e).__name__}: {e}")
     # Terminamos la función main
     return Result(result=True)
