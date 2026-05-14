@@ -52,8 +52,35 @@ def vpn_off() -> str:
     # Terminamos la función regresando la ip
     return ip_check.stdout.strip()
 
+
+# Funciones para scraping
+def get_driver(geckodriver_path: str, headless: bool, timeout: int) -> tuple[WebDriver, WebDriverWait]:
+    # Declaramos si el sistema operativo es windows
+    is_windows = platform.system() == "Windows"
+    # Declaramos el servicio del driver
+    service = Service(geckodriver_path)
+    # Configuramos las opciones
+    options = webdriver.FirefoxOptions()
+    options.set_preference("intl.accept_languages", "en-US,en")
+    options.add_argument("-private-window")
+    # Configuramos el headless
+    if not (is_windows and headless is False):
+        options.add_argument("--headless")
+    # Iniciamos el driver
+    driver = webdriver.Firefox(options=options, service=service)
+    # Ingresamos el tiempo de espera
+    wait = WebDriverWait(driver, timeout)
+    # Terminamos la función regresando driver y wait
+    return driver, wait
+
+
+def run_scraping(airport_code: str, hotel_code: str, geckodriver_path: str, headless: bool, timeout: int) -> None:
+    return
+
+
 # Función main
-def main_competitiveness(db_user: str, db_user_password: str, db_host: str, db_port: int, db_name: str) -> Result:
+def main_competitiveness(db_user: str, db_user_password: str, db_host: str, db_port: int, db_name: str,
+                         headless: bool, timeout: int, max_workers: int) -> Result:
     print("\t[Competitiveness Block] Scraping & processing 🧨")
     # Obtenemos las reglas para el scraping
     try:
@@ -71,8 +98,13 @@ def main_competitiveness(db_user: str, db_user_password: str, db_host: str, db_p
         print("\t ❌ Failed to connect to VPN")
         return Result(result=False, error=f"\t[Error] -> {type(e).__name__}: {e}")
     # Iniciamos el scraping de competitividad
-    print("XD")
-    time.sleep(10)
+
+
+    print("\t • Starting delegations scraping")
+    for _, row in df.iterrows():
+        print(row['expedia_airport_code'], row['expedia_hotel_code'])
+
+
     # Apagamos el VPN
     try:
         print("\t • Disconnecting VPN")

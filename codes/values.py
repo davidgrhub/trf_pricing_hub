@@ -31,6 +31,7 @@ headless = strtobool(os.getenv("HEADLESS"))
 timeout = int(os.getenv("TIMEOUT"))
 interval = int(os.getenv("INTERVAL"))
 max_workers_contracts = int(os.getenv("MAX_WORKERS_CONTRACTS"))
+max_workers_competitiveness = int(os.getenv("MAX_WORKERS_COMPETITIVENESS"))
 max_workers_discounts = int(os.getenv("MAX_WORKERS_DISCOUNTS"))
 
 strategy_list = list(map(str, os.getenv("STRATEGY_LIST").split(",")))
