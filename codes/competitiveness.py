@@ -1,6 +1,7 @@
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from selenium.webdriver.support import expected_conditions as ec, wait
 from selenium.webdriver.firefox.webdriver import WebDriver
+from sqlalchemy.engine import row
 from sqlalchemy.ext.asyncio import result
 from webdriver_manager.firefox import GeckoDriverManager
 from selenium.webdriver.support.ui import WebDriverWait
@@ -147,15 +148,24 @@ def main_competitiveness(db_user: str, db_user_password: str, db_host: str, db_p
         print("\t ❌ Failed to connect to VPN")
         return Result(result=False, error=f"\t[Error] -> {type(e).__name__}: {e}")
     # Iniciamos el scraping de competitividad
-
-
-    print("\t • Starting delegations scraping")
-    # Definimos la ruta del geckodriver
-    geckodriver_path = GeckoDriverManager().install()
-    for _, row in df.iterrows():
-        run_scraping(row['expedia_airport_code'], row['expedia_hotel_code'], geckodriver_path, headless, timeout)
-
-
+    try:
+        print("\t • Starting competitiveness scraping")
+        # Definimos la ruta del geckodriver
+        geckodriver_path = GeckoDriverManager().install()
+        # Definimos la lista que almacenara todas las filas
+        all_results = []
+        # Iniciamos los scrapings
+        with ProcessPoolExecutor(max_workers) as executor:
+            futures = {executor.submit(run_scraping, row_['expedia_airport_code'], row_['expedia_hotel_code'],
+                                       geckodriver_path, headless, timeout): row for _, row_ in df.iterrows()}
+            # Procesamos los resultados
+            for future in as_completed(futures):
+                rows_result = future.result()
+                if rows_result:
+                    all_results.append(rows_result)
+    except Exception as e:
+        print("\t ❌ Failed to perform scraping for competitiveness")
+        return Result(result=False, error=f"\t[Error] -> {type(e).__name__}: {e}")
     # Apagamos el VPN
     try:
         print("\t • Disconnecting VPN")
