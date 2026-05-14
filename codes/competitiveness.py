@@ -75,7 +75,7 @@ def get_driver(geckodriver_path: str, headless: bool, timeout: int) -> tuple[Web
     return driver, wait
 
 
-def get_data(airport_code: str, hotel_code: str, wait: WebDriverWait) -> list[dict]:
+def get_data(airport_code: str, hotel_code: str, link: str, wait: WebDriverWait) -> list[dict]:
     print_value = f"\t\t• Airport Code: {airport_code}, Hotel Id: {hotel_code}"
     # Declaramos la lista de filas
     rows = []
@@ -100,7 +100,8 @@ def get_data(airport_code: str, hotel_code: str, wait: WebDriverWait) -> list[di
                 'expedia_hotel_code': int(hotel_code),
                 'product': name,
                 'supplier': supplier,
-                'sale': int(sale),
+                'sale': int("".join(filter(str.isdigit, sale))),
+                'link':
             }
             rows.append(new_row)
     except TimeoutError:
@@ -116,11 +117,12 @@ def run_scraping(airport_code: str, hotel_code: str, geckodriver_path: str, head
     # Obtenemos el driver
     driver, wait = get_driver(geckodriver_path, headless, timeout)
     # Ingresamos a expedia
-    driver.get(f"https://www.expedia.com/ground-transfers/search?adults=2&airportCode={airport_code}&direction="
-               f"FROM_AIRPORT&hotelId={hotel_code}&pickUpDate={(datetime.today() + timedelta(8)).strftime('%Y-%m-%d')}"
-               f"&roundTrip=false")
+    link = (f"https://www.expedia.com/ground-transfers/search?adults=2&airportCode={airport_code}&direction="
+            f"FROM_AIRPORT&hotelId={hotel_code}&pickUpDate={(datetime.today() + timedelta(8)).strftime('%Y-%m-%d')}"
+            f"&roundTrip=false")
+    driver.get(link)
     # Obtenemos la información
-    rows = get_data(airport_code, hotel_code, wait)
+    rows = get_data(airport_code, hotel_code, link, wait)
     # Salimos de nuestro scraping cerrando el driver
     driver.close()
     driver.quit()
@@ -173,7 +175,7 @@ def main_competitiveness(db_user: str, db_user_password: str, db_host: str, db_p
             for future in as_completed(futures):
                 rows_result = future.result()
                 if rows_result:
-                    all_results.append(rows_result)
+                    all_results.extend(rows_result)
     except Exception as e:
         print("\t ❌ Failed to perform scraping for competitiveness")
         return Result(result=False, error=f"\t[Error] -> {type(e).__name__}: {e}")
