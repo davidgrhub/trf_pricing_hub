@@ -1,5 +1,5 @@
 from concurrent.futures import ProcessPoolExecutor, as_completed
-from selenium.webdriver.support import expected_conditions as ec
+from selenium.webdriver.support import expected_conditions as ec, wait
 from selenium.webdriver.firefox.webdriver import WebDriver
 from sqlalchemy.ext.asyncio import result
 from webdriver_manager.firefox import GeckoDriverManager
@@ -74,8 +74,57 @@ def get_driver(geckodriver_path: str, headless: bool, timeout: int) -> tuple[Web
     return driver, wait
 
 
-def run_scraping(airport_code: str, hotel_code: str, geckodriver_path: str, headless: bool, timeout: int) -> None:
-    return
+def get_data(airport_code: str, hotel_code: str, wait: WebDriverWait) -> list[dict]:
+    print_value = f"\t\t• Airport Code: {airport_code}, Hotel Id: {hotel_code}"
+    # Declaramos la lista de filas
+    rows = []
+    try:
+        # Buscamos las tarjetas totales
+        cards = wait.until(ec.visibility_of_all_elements_located(
+            (By.XPATH, '//div[@class="uitk-layout-flex uitk-layout-flex-block-size-full-size '
+                       'uitk-layout-flex-flex-direction-column uitk-layout-flex-justify-content-space-between"]')))
+        # Buscamos en cada una de las tarjetas
+        for card in cards:
+            # Obtenemos el nombre del producto
+            name = card.find_element(By.XPATH, './/h2[@class="uitk-heading uitk-heading-5 overflow-wrap"]').text
+            # Obtenemos el nombre del proveedor
+            supplier = card.find_element(By.XPATH, './/div[@class="uitk-text uitk-text-spacing-half '
+                                                   'truncate-lines-3 uitk-type-300 uitk-text-default-theme"]').text
+            # Buscamos el precio de venta
+            sale = card.find_element(By.XPATH, './/div[@class="uitk-text uitk-type-500 uitk-type-medium '
+                                               'uitk-text-emphasis-theme"]').text.replace("$","")
+            # Creamos la nueva fila
+            new_row = {
+                'expedia_airport_code': airport_code,
+                'expedia_hotel_code': int(hotel_code),
+                'product': name,
+                'supplier': supplier,
+                'sale': int(sale),
+            }
+            rows.append(new_row)
+    except TimeoutError:
+        print_value += f"\n\t\t\t❌ Check the rule"
+    # Iprimimos el mensaje
+    print_value += f", Rows: {len(rows)}"
+    print(print_value)
+    # Terminamos la funcion regresando las filas
+    return rows
+
+
+def run_scraping(airport_code: str, hotel_code: str, geckodriver_path: str, headless: bool, timeout: int) -> list[dict]:
+    # Obtenemos el driver
+    driver, wait = get_driver(geckodriver_path, headless, timeout)
+    # Ingresamos a expedia
+    driver.get(f"https://www.expedia.com/ground-transfers/search?adults=2&airportCode={airport_code}&direction="
+               f"FROM_AIRPORT&hotelId={hotel_code}&pickUpDate={(datetime.today() + timedelta(8)).strftime('%Y-%m-%d')}"
+               f"&roundTrip=false")
+    # Obtenemos la información
+    rows = get_data(airport_code, hotel_code, wait)
+    # Salimos de nuestro scraping cerrando el driver
+    driver.close()
+    driver.quit()
+    # Termianmos la funcion regresando las filas
+    return rows
 
 
 # Función main
@@ -101,8 +150,10 @@ def main_competitiveness(db_user: str, db_user_password: str, db_host: str, db_p
 
 
     print("\t • Starting delegations scraping")
+    # Definimos la ruta del geckodriver
+    geckodriver_path = GeckoDriverManager().install()
     for _, row in df.iterrows():
-        print(row['expedia_airport_code'], row['expedia_hotel_code'])
+        run_scraping(row['expedia_airport_code'], row['expedia_hotel_code'], geckodriver_path, headless, timeout)
 
 
     # Apagamos el VPN
