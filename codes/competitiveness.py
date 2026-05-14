@@ -101,7 +101,7 @@ def get_data(airport_code: str, hotel_code: str, link: str, wait: WebDriverWait)
                 'product': name,
                 'supplier': supplier,
                 'sale': int("".join(filter(str.isdigit, sale))),
-                'link':
+                'link': link
             }
             rows.append(new_row)
     except TimeoutError:
