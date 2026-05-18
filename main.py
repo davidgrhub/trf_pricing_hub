@@ -47,7 +47,7 @@ def main() -> None:
         result: StrategiesResult = main_strategies(values.db_user, values.db_user_password, values.db_host,
                                                    values.db_port, values.db_name, values.ff_min_margin,
                                                    values.ff_max_discount, values.pvp_min_margin,
-                                                   values.pvp_max_discount)
+                                                   values.pvp_max_discount, values.comp_min_margin)
         # Imprimimos si existe el error
         if not result.result: print(result.error)
     # Bloque descuentos

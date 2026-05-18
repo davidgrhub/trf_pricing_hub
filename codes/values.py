@@ -35,6 +35,7 @@ max_workers_competitiveness = int(os.getenv("MAX_WORKERS_COMPETITIVENESS"))
 max_workers_discounts = int(os.getenv("MAX_WORKERS_DISCOUNTS"))
 
 strategy_list = list(map(str, os.getenv("STRATEGY_LIST").split(",")))
+comp_min_margin = float(os.getenv("PVP_COMP_MIN_MARGIN"))
 pvp_min_margin = float(os.getenv("PVP_MIN_MARGIN"))
 pvp_max_discount = float(os.getenv("PVP_MAX_DISCOUNT"))
 ff_min_margin = float(os.getenv("FF_MIN_MARGIN"))
