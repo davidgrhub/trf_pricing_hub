@@ -31,7 +31,8 @@ def get_rules(db_user: str, db_user_password: str, db_host: str, db_port: int, d
     # Creamos la conexión
     engine = create_engine(f"mysql+pymysql://{db_user}:{db_user_password}@{db_host}:{db_port}/{db_name}")
     # Leemos la tabla y la convertimos en DataFrame
-    df = pd.read_sql(f"SELECT DISTINCT expedia_airport_code, expedia_hotel_code FROM rules", con=engine)
+    df = pd.read_sql(f"SELECT DISTINCT expedia_airport_code, expedia_hotel_code FROM rules"
+                     f" WHERE is_active = 1", con=engine)
     # Terminamos la función regresando el DataFrame
     return df
 

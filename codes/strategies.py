@@ -21,7 +21,7 @@ def get_contracts(db_user: str, db_user_password: str, db_host: str, db_port: in
     # Leemos la tabal de competitivad
     df_comp = pd.read_sql(f"SELECT * FROM competitiveness_result", con=engine)
     # Leemos las reglas de competitividad
-    df_rules = pd.read_sql(f"SELECT * FROM rules", con=engine)
+    df_rules = pd.read_sql(f"SELECT * FROM rules WHERE is_active = 1", con=engine)
     # Terminamos la función regresando el DataFrame
     return df, df_rules, df_comp
 
