@@ -1,22 +1,18 @@
 from concurrent.futures import ProcessPoolExecutor, as_completed
-from selenium.webdriver.support import expected_conditions as ec, wait
+from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.firefox.webdriver import WebDriver
-from sqlalchemy.engine import row
-from sqlalchemy.ext.asyncio import result
 from webdriver_manager.firefox import GeckoDriverManager
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.common.by import By
-from sqlalchemy import create_engine
 from datetime import datetime, timedelta
+from sqlalchemy import create_engine
+from sqlalchemy.engine import row
 from dataclasses import dataclass
 from selenium import webdriver
 import pandas as pd
 import subprocess
-import numpy as np
 import platform
-import time
 
 
 # Clase para el resultado del bloque
@@ -31,8 +27,8 @@ def get_rules(db_user: str, db_user_password: str, db_host: str, db_port: int, d
     # Creamos la conexión
     engine = create_engine(f"mysql+pymysql://{db_user}:{db_user_password}@{db_host}:{db_port}/{db_name}")
     # Leemos la tabla y la convertimos en DataFrame
-    df = pd.read_sql(f"SELECT DISTINCT expedia_airport_code, expedia_hotel_code FROM rules"
-                     f" WHERE is_active = 1", con=engine)
+    df = pd.read_sql(f"SELECT DISTINCT expedia_airport_code, expedia_hotel_code FROM rules "
+                     f"WHERE is_active = 1", con=engine)
     # Terminamos la función regresando el DataFrame
     return df
 
