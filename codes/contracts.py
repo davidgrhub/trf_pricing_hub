@@ -318,8 +318,8 @@ def run_scraping_percentile(geckodriver_path: str, headless: bool, downloads_pat
     # Manejo de error para cerrar el driver
     try:
         # Ingresamos a la url del dash
-        driver.get('https://app.powerbi.com/links/lX7OPMQX5W?ctid=34b7220f-ddb0-49fb-b389-f4b8d3e1ec9a&'
-                   'pbi_source=linkShare')
+        driver.get('https://app.powerbi.com/groups/me/reports/39815c29-c965-4130-bd22-2d9da7f620f0/128327e0780ff2cb1405'
+                   '?ctid=34b7220f-ddb0-49fb-b389-f4b8d3e1ec9a&experience=power-bi')
         # Iniciamos sesión en BI
         sing_in(wait, user_mail, user_password)
         print("\t\tLogged in successfully")
