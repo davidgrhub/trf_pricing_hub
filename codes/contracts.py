@@ -376,8 +376,21 @@ def clean_percentile(df: pd.DataFrame) -> pd.DataFrame:
         df['unique_id_percentile'] = df.apply(compute_unique_id, axis=1)
         df = df.dropna(subset=['unique_id_percentile']).copy()
         df['unique_id_percentile'] = df['unique_id_percentile'].astype(int)
+        # Aseguramos la conversión numérica limpia de los costos
+        for col in ['Cost', 'Costo_x_Pax']:
+            if col in df.columns:
+                if df[col].dtype == 'object':
+                    df[col] = df[col].astype(str).str.replace(',', '.', regex=False)
+                df[col] = pd.to_numeric(df[col], errors='coerce')
+        # Eliminamos cualquier fila que se haya quedado sin costos válidos
+        df = df.dropna(subset=['Cost', 'Costo_x_Pax'])
+        # Agrupamos por ID único y calculamos el Percentil 70
+        final_df = df.groupby('unique_id_percentile').agg(
+            Percentil_Cost_USD=('Cost', lambda x: x.quantile(0.70)),
+            Percentil_costo_x_pax=('Costo_x_Pax', lambda x: x.quantile(0.70))
+        ).reset_index()
         # Regresamos el dataframe
-        return df
+        return final_df
 
 
 def get_percentile_data(downloads_path: str) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
