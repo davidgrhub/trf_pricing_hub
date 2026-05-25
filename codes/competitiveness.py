@@ -115,7 +115,7 @@ def run_scraping(airport_code: str, hotel_code: str, geckodriver_path: str, head
     driver, wait = get_driver(geckodriver_path, headless, timeout)
     # Ingresamos a expedia
     link = (f"https://www.expedia.com/ground-transfers/search?adults=1&airportCode={airport_code}&direction="
-            f"FROM_AIRPORT&hotelId={hotel_code}&pickUpDate={(datetime.today() + timedelta(8)).strftime('%Y-%m-%d')}"
+            f"FROM_AIRPORT&hotelId={int(hotel_code)}&pickUpDate={(datetime.today() + timedelta(8)).strftime('%Y-%m-%d')}"
             f"&roundTrip=false")
     driver.get(link)
     # Obtenemos la información
