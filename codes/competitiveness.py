@@ -73,7 +73,7 @@ def get_driver(geckodriver_path: str, headless: bool, timeout: int) -> tuple[Web
 
 
 def get_data(airport_code: str, hotel_code: str, link: str, wait: WebDriverWait) -> list[dict]:
-    print_value = f"\t\t• Airport Code: {airport_code}, Hotel Id: {hotel_code}"
+    print_value = f"\t\t• Airport Code: {airport_code}, Hotel Id: {int(hotel_code)}"
     # Declaramos la lista de filas
     rows = []
     try:
