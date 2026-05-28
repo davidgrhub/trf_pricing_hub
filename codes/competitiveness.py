@@ -72,8 +72,8 @@ def get_driver(geckodriver_path: str, headless: bool, timeout: int) -> tuple[Web
     return driver, wait
 
 
-def get_data(airport_code: str, hotel_code: str, link: str, wait: WebDriverWait) -> list[dict]:
-    print_value = f"\t\t• Airport Code: {airport_code}, Hotel Id: {int(hotel_code)}"
+def get_data(airport_code: str, hotel_code: int, link: str, wait: WebDriverWait) -> list[dict]:
+    print_value = f"\t\t• Airport Code: {airport_code}, Hotel Id: {hotel_code}"
     # Declaramos la lista de filas
     rows = []
     try:
@@ -94,7 +94,7 @@ def get_data(airport_code: str, hotel_code: str, link: str, wait: WebDriverWait)
             # Creamos la nueva fila
             new_row = {
                 'expedia_airport_code': airport_code,
-                'expedia_hotel_code': int(hotel_code),
+                'expedia_hotel_code': hotel_code,
                 'product': name,
                 'supplier': supplier,
                 'sale': int("".join(filter(str.isdigit, sale))),
@@ -110,12 +110,13 @@ def get_data(airport_code: str, hotel_code: str, link: str, wait: WebDriverWait)
     return rows
 
 
-def run_scraping(airport_code: str, hotel_code: str, geckodriver_path: str, headless: bool, timeout: int) -> list[dict]:
+def run_scraping(airport_code: str, hotel_code: int, geckodriver_path: str, headless: bool, timeout: int) -> list[dict]:
     # Obtenemos el driver
     driver, wait = get_driver(geckodriver_path, headless, timeout)
+    # Cambiamos el tipo de dato
     # Ingresamos a expedia
     link = (f"https://www.expedia.com/ground-transfers/search?adults=1&airportCode={airport_code}&direction="
-            f"FROM_AIRPORT&hotelId={int(hotel_code)}&pickUpDate={(datetime.today() + timedelta(8)).strftime('%Y-%m-%d')}"
+            f"FROM_AIRPORT&hotelId={hotel_code}&pickUpDate={(datetime.today() + timedelta(8)).strftime('%Y-%m-%d')}"
             f"&roundTrip=false")
     driver.get(link)
     # Obtenemos la información
@@ -149,7 +150,7 @@ def main_competitiveness(db_user: str, db_user_password: str, db_host: str, db_p
     except Exception as e:
         print("\t ❌ Failed to retrieve rules from database")
         return Result(result=False, error=f"\t[Error] -> {type(e).__name__}: {e}")
-    # Prendemos el VPN
+    # Prendemos VPN
     try:
         print("\t • Connecting to VPN")
         new_ip = vpn_on()
@@ -166,8 +167,9 @@ def main_competitiveness(db_user: str, db_user_password: str, db_host: str, db_p
         all_results = []
         # Iniciamos los scrapings
         with ProcessPoolExecutor(max_workers) as executor:
-            futures = {executor.submit(run_scraping, row_['expedia_airport_code'], row_['expedia_hotel_code'],
-                                       geckodriver_path, headless, timeout): row for _, row_ in df.iterrows()}
+            futures = {executor.submit(run_scraping, row_['expedia_airport_code'],
+                                       int(row_['expedia_hotel_code']), geckodriver_path, headless,
+                                       timeout): row for _, row_ in df.iterrows()}
             # Procesamos los resultados
             for future in as_completed(futures):
                 rows_result = future.result()
