@@ -141,7 +141,7 @@ def upload_data(df: pd.DataFrame, db_user: str, db_user_password: str, db_host: 
 
 # Función main
 def main_competitiveness(db_user: str, db_user_password: str, db_host: str, db_port: int, db_name: str,
-                         headless: bool, timeout: int, max_workers: int) -> Result:
+                         headless: bool, timeout: int, max_workers: int, vpn_restart_interval: int) -> Result:
     print("\t[Competitiveness Block] Scraping & processing 🧨")
     # Obtenemos las reglas para el scraping
     try:
@@ -165,16 +165,41 @@ def main_competitiveness(db_user: str, db_user_password: str, db_host: str, db_p
         geckodriver_path = GeckoDriverManager().install()
         # Definimos la lista que almacenara todas las filas
         all_results = []
-        # Iniciamos los scrapings
-        with ProcessPoolExecutor(max_workers) as executor:
-            futures = {executor.submit(run_scraping, row_['expedia_airport_code'],
-                                       int(row_['expedia_hotel_code']), geckodriver_path, headless,
-                                       timeout): row for _, row_ in df.iterrows()}
-            # Procesamos los resultados
-            for future in as_completed(futures):
-                rows_result = future.result()
-                if rows_result:
-                    all_results.extend(rows_result)
+        
+        # Convertimos las reglas a una lista de diccionarios para poder dividirlas en lotes
+        rules_list = df.to_dict('records')
+        total_rules = len(rules_list)
+        interval_size = vpn_restart_interval if vpn_restart_interval > 0 else total_rules
+        total_batches = (total_rules + interval_size - 1) // interval_size
+        
+        # Iniciamos los scrapings por lotes
+        for i in range(0, total_rules, interval_size):
+            batch = rules_list[i:i + interval_size]
+            batch_num = (i // interval_size) + 1
+            print(f"\t • [Batch {batch_num}/{total_batches}] Processing {len(batch)} rule(s) in parallel")
+            
+            # Si no es el primer lote, reiniciamos la VPN
+            if i > 0:
+                try:
+                    print(f"\t • [Batch {batch_num}/{total_batches}] Restarting VPN to change IP...")
+                    ip_off = vpn_off()
+                    print(f"\t\tDisconnected. Original IP: {ip_off}")
+                    new_ip = vpn_on()
+                    print(f"\t\tConnected. New IP: {new_ip}")
+                except Exception as e:
+                    print(f"\t ❌ Failed to reconnect VPN: {e}")
+                    return Result(result=False, error=f"\t[Error] -> {type(e).__name__}: {e}")
+            
+            # Ejecutamos el lote actual en paralelo
+            with ProcessPoolExecutor(max_workers) as executor:
+                futures = {executor.submit(run_scraping, rule['expedia_airport_code'],
+                                           int(rule['expedia_hotel_code']), geckodriver_path, headless,
+                                           timeout): rule for rule in batch}
+                # Procesamos los resultados del lote
+                for future in as_completed(futures):
+                    rows_result = future.result()
+                    if rows_result:
+                        all_results.extend(rows_result)
     except Exception as e:
         print("\t ❌ Failed to perform scraping for competitiveness")
         return Result(result=False, error=f"\t[Error] -> {type(e).__name__}: {e}")

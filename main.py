@@ -38,7 +38,8 @@ def main() -> None:
         # Ejecutamos el bloque de competitividad
         result: CompetitivenessResult = main_competitiveness(values.db_user, values.db_user_password, values.db_host,
                                                              values.db_port, values.db_name, values.headless,
-                                                             values.timeout, values.max_workers_competitiveness)
+                                                             values.timeout, values.max_workers_competitiveness,
+                                                             values.vpn_restart_interval)
         # Imprimimos si existe el error
         if not result.result: print(result.error)
     # Bloque estrategias

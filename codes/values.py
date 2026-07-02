@@ -32,6 +32,7 @@ timeout = int(os.getenv("TIMEOUT"))
 interval = int(os.getenv("INTERVAL"))
 max_workers_contracts = int(os.getenv("MAX_WORKERS_CONTRACTS"))
 max_workers_competitiveness = int(os.getenv("MAX_WORKERS_COMPETITIVENESS"))
+vpn_restart_interval = int(os.getenv("VPN_RESTART_INTERVAL", "10"))
 max_workers_discounts = int(os.getenv("MAX_WORKERS_DISCOUNTS"))
 
 strategy_list = list(map(str, os.getenv("STRATEGY_LIST").split(",")))
